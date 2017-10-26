@@ -41,7 +41,17 @@ class OrganizationMembersView extends OrganizationSettingsView {
   getEndpoints() {
     return [
       ['members', `/organizations/${this.props.params.orgId}/members/`],
-      ['authProvider', `/organizations/${this.props.params.orgId}/auth-provider/`],
+      [
+        'authProvider',
+        `/organizations/${this.props.params.orgId}/auth-provider/`,
+        {},
+        {
+          allowError: error => {
+            // Allow for 403s
+            return error.status === 403;
+          },
+        },
+      ],
       ['requestList', `/organizations/${this.props.params.orgId}/access-requests/`],
     ];
   }
