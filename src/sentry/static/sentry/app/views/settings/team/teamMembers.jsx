@@ -1,10 +1,13 @@
 import React from 'react';
+import {Link} from 'react-router';
 
 import ApiMixin from '../../../mixins/apiMixin';
 import Avatar from '../../../components/avatar';
+import Button from '../../../components/buttons/button';
 import LoadingError from '../../../components/loadingError';
 import LoadingIndicator from '../../../components/loadingIndicator';
 import OrganizationState from '../../../mixins/organizationState';
+import recreateRoute from '../../../utils/recreateRoute';
 import {t} from '../../../locale';
 
 const TeamMembers = React.createClass({
@@ -62,20 +65,22 @@ const TeamMembers = React.createClass({
     if (this.state.loading) return <LoadingIndicator />;
     else if (this.state.error) return <LoadingError onRetry={this.fetchData} />;
 
-    let {orgId} = this.props.params;
-    let memberPrefix = `/organizations/${orgId}/members`;
+    let {params, routes} = this.props;
+
     let access = this.getAccess();
 
     return (
       <div>
         <div style={{marginBottom: 20}} className="clearfix">
           {access.has('org:write') ? (
-            <a
-              className="btn btn-primary btn-sm pull-right"
-              href={`${memberPrefix}/new/`}
+            <Button
+              priority="primary"
+              size="small"
+              className="pull-right"
+              to={`${recreateRoute('members/new/', {routes, params, stepBack: -2})}`}
             >
               <span className="icon-plus" /> {t('Invite Member')}
-            </a>
+            </Button>
           ) : (
             <a
               className="btn btn-primary btn-sm btn-disabled tip pull-right"
@@ -104,7 +109,15 @@ const TeamMembers = React.createClass({
                   <td className="table-user-info">
                     <Avatar user={member} size={80} />
                     <h5>
-                      <a href={`${memberPrefix}/${member.id}/`}>{member.email}</a>
+                      <Link
+                        to={`${recreateRoute(`members/${member.id}`, {
+                          routes,
+                          params,
+                          stepBack: -2,
+                        })}`}
+                      >
+                        {member.email}
+                      </Link>
                     </h5>
                     {member.email}
                   </td>
