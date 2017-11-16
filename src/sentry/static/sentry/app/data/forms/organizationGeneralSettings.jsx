@@ -133,12 +133,13 @@ const createSearchIndex = field => {
     .replace(' ', '');
 };
 
-const createSearchMap = ({route, formGroups}) => {
+const createSearchMap = ({route, formGroups, ...other}) => {
   return _.fromPairs(
     _.flatMap(formGroups, ({title, fields}) =>
       fields.map(field => [
         createSearchIndex(field),
         {
+          ...other,
           route,
           groupTitle: title,
           field,
@@ -153,6 +154,7 @@ export default forms;
 // generate search index from form fields
 export const searchIndex = createSearchMap({
   route: '/settings/organization/:orgId/settings/',
+  requireParams: ['orgId'],
   formGroups: forms,
 });
 

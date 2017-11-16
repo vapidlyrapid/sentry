@@ -4,12 +4,15 @@ import React from 'react';
 import styled from 'react-emotion';
 
 import AutoComplete from '../../../components/autoComplete';
-import {searchIndex} from '../../../data/forms/organizationGeneralSettings';
+import {searchIndex as orgSearchIndex} from '../../../data/forms/organizationGeneralSettings';
+import {searchIndex as teamSearchIndex} from '../../../data/forms/teamSettingsFields';
 import {t} from '../../../locale';
 import IconSearch from '../../../icons/icon-search';
 import replaceRouterParams from '../../../utils/replaceRouterParams';
 
 const MIN_SEARCH_LENGTH = 2;
+
+const searchIndex = Object.assign({}, orgSearchIndex, teamSearchIndex);
 
 const SearchInputWrapper = styled.div`
   position: relative;
@@ -126,9 +129,19 @@ class SettingsSearch extends React.Component {
           let matches =
             isValidSearch &&
             isOpen &&
-            Object.keys(searchIndex).filter(
-              key => key.indexOf(inputValue.toLowerCase()) > -1
-            );
+            Object.keys(searchIndex)
+              .filter(key => key.indexOf(inputValue.toLowerCase()) > -1)
+              .filter(key => {
+                // TODO: Open up a confirm to ask which project/team/org to use
+                // The route doesn't have all params to continue, don't show in search results
+                return (
+                  !searchIndex[key].requireParams ||
+                  !searchIndex[key].requireParams.length ||
+                  !searchIndex[key].requireParams.find(
+                    param => typeof params[param] === 'undefined'
+                  )
+                );
+              });
 
           return (
             <SettingsSearchContainer>

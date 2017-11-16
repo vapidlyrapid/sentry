@@ -1,3 +1,4 @@
+import {Box} from 'grid-emotion';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -5,17 +6,23 @@ import {
   addErrorMessage,
   addSuccessMessage,
 } from '../../../actionCreators/settingsIndicator';
-import {t} from '../../../locale';
 import AsyncView from '../../asyncView';
 import Form from '../../../components/forms/next/form';
+import JsonForm from '../../../components/forms/next/jsonForm';
+import teamSettingsFields from '../../../data/forms/teamSettingsFields';
 import TeamModel from './model';
-import TextField from '../../../components/forms/next/textField';
+
+const TOAST_DURATION = 10000;
 
 export default class TeamSettings extends AsyncView {
   static propTypes = {
     ...AsyncView.propTypes,
     team: PropTypes.object.isRequired,
     onTeamChange: PropTypes.func.isRequired,
+  };
+
+  static contextTypes = {
+    location: PropTypes.object,
   };
 
   constructor(props, context) {
@@ -34,36 +41,34 @@ export default class TeamSettings extends AsyncView {
     let team = this.props.team;
 
     return (
-      <div className="box">
-        <div className="box-content with-padding">
-          <Form
-            model={this.model}
-            saveOnBlur
-            allowUndo
-            onSubmitSuccess={() => addSuccessMessage('Change saved', 3000)}
-            onSubmitError={() => addErrorMessage('Unable to save change', 3000)}
-            initialData={{
-              name: team.name,
-              slug: team.slug,
-            }}
-          >
-            <TextField
-              name="name"
-              label={t('Name')}
-              placeholder={t('e.g. API Team')}
-              help={t('The name of your team. e.g. API Team')}
-              required={true}
-            />
-            <TextField
-              name="slug"
-              label={t('Short name')}
-              placeholder={t('e.g. api-team')}
-              help={t('A unique ID used to identify the team, e.g. api-team')}
-              required={true}
-            />
-          </Form>
-        </div>
-      </div>
+      <Form
+        model={this.model}
+        apiMethod="PUT"
+        saveOnBlur
+        allowUndo
+        onSubmitSuccess={(change, model, id) => {
+          if (!model) return;
+
+          let label = model.getDescriptor(id, 'label');
+
+          if (!label) return;
+
+          addSuccessMessage(
+            `Changed ${label} from "${change.old}" to "${change.new}"`,
+            TOAST_DURATION,
+            {model, id}
+          );
+        }}
+        onSubmitError={() => addErrorMessage('Unable to save change', TOAST_DURATION)}
+        initialData={{
+          name: team.name,
+          slug: team.slug,
+        }}
+      >
+        <Box>
+          <JsonForm location={this.context.location} forms={teamSettingsFields} />
+        </Box>
+      </Form>
     );
   }
 }
